@@ -6,7 +6,8 @@
       "Bash(npx tsc:*)",
       "Bash(ls:*)",
       "Bash(node:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npx next:*)"
     ]
   }
 }

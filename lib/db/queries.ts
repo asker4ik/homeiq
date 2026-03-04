@@ -201,7 +201,6 @@ export async function adminUpsertSoldComps(comps: Omit<SoldComp, 'id' | 'created
 
 // ─── Row Mappers (snake_case DB → camelCase TS) ───────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapPropertyRow(row: Record<string, any>): Property {
   return {
     id: row.id,
@@ -233,7 +232,6 @@ function mapPropertyRow(row: Record<string, any>): Property {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapSoldCompRow(row: Record<string, any>): SoldComp {
   return {
     id: row.id,
@@ -255,7 +253,6 @@ function mapSoldCompRow(row: Record<string, any>): SoldComp {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapOfferRow(row: Record<string, any>): Offer {
   return {
     id: row.id,
@@ -274,7 +271,6 @@ function mapOfferRow(row: Record<string, any>): Offer {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapSavedPropertyRow(row: Record<string, any>): SavedProperty {
   return {
     id: row.id,

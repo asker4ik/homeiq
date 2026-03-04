@@ -173,7 +173,7 @@ function StepOfferPrice({ form, update, property, priceRange }: StepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-foreground">What's your offer price?</h2>
+        <h2 className="text-xl font-bold text-foreground">What&apos;s your offer price?</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           The seller is asking{" "}
           <span className="font-semibold text-foreground">

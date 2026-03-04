@@ -104,7 +104,7 @@ export function CompSelector({ property, comps }: Props) {
           <div className="rounded-xl border bg-card p-10 text-center">
             <p className="text-sm font-medium text-foreground">No comparable sales found</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              No sold comps are available for this property's area. Try checking
+              No sold comps are available for this property&apos;s area. Try checking
               nearby zip codes.
             </p>
           </div>
