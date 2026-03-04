@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -227,80 +227,92 @@ interface Props {
 
 export function AdvisoryBrief({ propertyId, compIds }: Props) {
   const [brief, setBrief] = useState<AdvisoryBriefType | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
+  const [started, setStarted] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  async function fetchBrief() {
+    setStarted(true);
+    setLoading(true);
+    setError(null);
+    setBrief(null);
 
-    async function fetchBrief() {
-      setLoading(true);
-      setError(null);
-      setBrief(null);
+    try {
+      const res = await fetch("/api/advisory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ propertyId, compIds }),
+      });
 
-      try {
-        const res = await fetch("/api/advisory", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ propertyId, compIds }),
-        });
-
-        if (!res.ok || !res.body) {
-          const text = await res.text().catch(() => "");
-          throw new Error(
-            text
-              ? JSON.parse(text)?.error ?? text
-              : `Request failed (${res.status})`
-          );
-        }
-
-        // Accumulate the stream
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let accumulated = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          accumulated += decoder.decode(value, { stream: true });
-        }
-
-        if (cancelled) return;
-
-        // Strip any accidental markdown fences Claude might add
-        const cleaned = accumulated
-          .trim()
-          .replace(/^```(?:json)?\s*/i, "")
-          .replace(/\s*```$/, "");
-
-        const parsed: AdvisoryBriefType = JSON.parse(cleaned);
-        setBrief(parsed);
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Something went wrong. Please try again."
-          );
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (!res.ok || !res.body) {
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          text
+            ? JSON.parse(text)?.error ?? text
+            : `Request failed (${res.status})`
+        );
       }
-    }
 
-    fetchBrief();
-    return () => {
-      cancelled = true;
-    };
-  }, [propertyId, compIds, attempt]);
+      // Accumulate the stream
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        accumulated += decoder.decode(value, { stream: true });
+      }
+
+      // Strip any accidental markdown fences Claude might add
+      const cleaned = accumulated
+        .trim()
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "");
+
+      const parsed: AdvisoryBriefType = JSON.parse(cleaned);
+      setBrief(parsed);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!started) {
+    return (
+      <div className="rounded-xl border bg-card shadow-sm p-6 flex flex-col items-center text-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+          <Sparkles className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-foreground">AI Property Analysis</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Powered by Claude · Covers red flags, strengths, and market position
+          </p>
+        </div>
+        <button
+          onClick={fetchBrief}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <Sparkles className="h-4 w-4" />
+          Generate AI Analysis
+        </button>
+        <p className="text-xs text-muted-foreground">Takes about 10 seconds</p>
+      </div>
+    );
+  }
 
   if (loading) return <AdvisoryBriefSkeleton />;
   if (error)
     return (
       <AdvisoryBriefError
         message={error}
-        onRetry={() => setAttempt((n) => n + 1)}
+        onRetry={fetchBrief}
       />
     );
   if (!brief) return null;
